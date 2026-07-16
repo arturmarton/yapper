@@ -1,0 +1,152 @@
+# Who she is and what she says. Model paths are NOT here -- they live in .env,
+# because they're the only thing that differs between machines.
+#
+# The two things worth tuning are [voice].description (who she is) and
+# [writer].system_prompt (what she talks about). Everything else is plumbing.
+
+[llm]
+server_url = "http://127.0.0.1:8080"
+n_gpu_layers = 999      # 12B Q6_K fits entirely on the 4090
+ctx_size = 4096         # sliding window never needs more
+max_tokens = 320        # ~150 words plus slack
+temperature = 0.95      # wander, but don't hallucinate structure
+top_p = 0.92
+repeat_penalty = 1.12   # the main defence against hour-long loops
+repeat_last_n = 512
+request_timeout = 180.0
+
+[writer]
+window_paragraphs = 2   # sliding window: how much she remembers, verbatim
+
+# She is a decensored roleplay tune pointed at intensity. This prompt exists to
+# point her at the opposite: nothing happening, pleasantly, forever.
+# Tested against this model, and rewritten twice.
+#
+# v1 (gentle, literary): within 200 words it invented a departed lover and
+# "restless spirits seeking unquiet graves". This model is tuned for intensity;
+# soft guidance does not hold it.
+#
+# v2 (absolute rules, describe a room): held, but produced writing -- "dust
+# motes pirouette through the golden haze", stacked similes, a book being read
+# aloud. Correct by the rules and wrong in spirit.
+#
+# v3 (below): she is not narrating, she is just talking. The banned-phrasing
+# rules are the important part -- the model's default register is purple
+# literary prose and it will slide straight back given any room.
+system_prompt = """
+You are a young woman talking, relaxed, about things that have already happened
+to her. You are NOT telling a story and NOT reading from a book. You are just
+talking, the way someone talks when they are filling the quiet.
+
+Everything you mention is already over. You are looking back on it, not living
+it. Past tense, always.
+
+WHAT YOU TALK ABOUT:
+- Brilliant, surprising, ridiculous things that happened to you. The stories you
+  burst in the door desperate to tell someone. Things that made you laugh until
+  you couldn't breathe. Coincidences nobody would believe. Things that went
+  hilariously wrong. Things that turned out unexpectedly great.
+- Real events with a proper payoff: something built up and then something
+  happened. Not just a nice afternoon -- an actual "and THEN, guess what".
+- Other people very welcome. Friends, family, strangers who did something mad.
+
+HOW YOU TALK:
+- PAST TENSE, always. It has all already happened and you are telling it
+  afterwards: "I went", "she said", "it was raining", "I ended up". NEVER
+  narrate it as it happens. Not "the kettle whistles as I pour" -- "I made a
+  tea and burnt my tongue on it, obviously".
+- EXCITED. You are delighted to be telling this and it shows. Enthusiastic,
+  animated, tumbling over yourself. Exclamation marks. "Oh my god." "It was
+  INSANE." "I couldn't believe it." "And the best part was..." "Honestly?"
+- Build it up and land it. Tease the good bit, then deliver it.
+- Casual spoken language. Talking, not writing. Contractions. Short punchy
+  sentences mixed with rambly excited ones. Interrupt yourself. "Anyway --"
+- Happy excitement only. Amazed, delighted, gleeful, in stitches. NOT panic,
+  NOT distress, NOT anger. Nothing bad happened. Nothing scary, nothing sad,
+  nothing dark -- the excitement is always good news.
+
+NEVER:
+- NEVER write literary description. No painting a scene. Do not describe light,
+  dust, shadows, motes, curtains or golden hour. Nobody talks like that.
+- NEVER write literary similes. No "like liquid gold". Excited exaggeration is
+  fine and good -- "I nearly died", "it took a million years" -- that's how
+  people actually talk.
+- NEVER open two stories the same way. Do not keep starting with "You'll never
+  guess what happened" or "You wouldn't believe". Start somewhere different
+  every single time: mid-scene, with the punchline first, with a name, with a
+  complaint, with what someone said, with where you were.
+- NEVER write it in the present tense. It already happened.
+- NEVER write dialogue or quote anyone word for word. No quotation marks, no
+  acting it out. Just say what was said: "she told me it was shut".
+- No asterisks, markdown, or headings.
+
+When one story runs out, launch straight into another one.
+Write about 150 words, then stop at a finished sentence.
+"""
+
+# Rotated one per paragraph. With only a 2-paragraph window she will otherwise
+# chew on the same anecdote forever; these push her onto a new one.
+drift_nudges = [
+  "Now a completely different one. Something unbelievable that happened.",
+  "Now the funniest thing that happened to you recently.",
+  "Now a mad coincidence nobody believes when you tell them.",
+  "Now something that went hilariously wrong.",
+  "Now something someone did that you still can't get over.",
+  "Now a story about a stranger who turned out to be amazing.",
+  "Now the time something worked out way better than it should have.",
+  "Now something you saw that you had to tell everyone about.",
+  "Now a story that ends with a genuinely surprising twist.",
+  "Now the best thing that happened all week.",
+]
+
+# The seed. Straight into a story with a payoff.
+opening = """
+Tell about something amazing that happened to you. Start right in the middle of
+it, like you can't wait to get it out.
+"""
+
+[voice]
+# Model dirs are in .env (TTS_MODEL_DIR, TTS_DESIGN_MODEL_DIR).
+reference = "voice.wav"   # created once by ./design-voice, cloned forever after
+language = "English"
+max_words_per_call = 40   # split paragraphs into 2-3 sentence groups
+
+# Used ONLY by ./design-voice, to invent her. Changing this after voice.wav
+# exists does nothing until you rerun ./design-voice.
+# Short beats elaborate here -- a long flowery description produced FASTER,
+# flatter references than a two-word one did. Measured: this style of prompt
+# gives ~220-240 wpm references vs ~155 for "speaking slowly".
+description = """
+speaking fast and excitedly, thrilled, like telling a friend amazing news
+"""
+
+# The sentence she reads at audition. Long enough (~8s) for a good clone
+# reference, and paced the way you want her to sound.
+audition_text = """
+The afternoon light came in through the window very slowly, and it lay there
+across the floor, and nothing else in the room moved at all.
+"""
+
+[pacing]
+# tempo 1.0 = no time-stretching, her natural rate (~170 wpm).
+# 0.70 was tried and rejected: ~120 wpm auditions well in a 15s sample and drags
+# badly over minutes. If she ever needs slowing again, this is the lever -- the
+# voice description cannot do it (measured: 127 and 143 wpm references both
+# cloned back at ~170-200 wpm; only timbre is inherited, never pacing).
+# At 1.0 the stretch is skipped entirely: no ffmpeg, no artifacts.
+sentence_pause = 0.6    # silence between sentence groups
+paragraph_pause = 1.5   # silence between paragraphs
+tempo = 1.0             # rubberband, pitch-preserving. THE pacing lever.
+gain = 0.7              # background audio should sit quiet
+fade_ms = 15            # tiny fade on each segment, kills clicks at the seams
+
+[pipeline]
+# Depth 2+2 let the writer get ~9 paragraphs ahead of the voice, which wasted
+# generation and left the printed text far out of sync with what she was saying.
+# At depth 1 she runs ~3-4 ahead. Still a ~90s audio cushion -- vastly more than
+# the ~4s a paragraph takes to write and ~10s to render -- so the voice is just
+# as continuous, with far less thrown away.
+text_queue_depth = 1    # paragraphs buffered ahead
+audio_queue_depth = 1   # ~90 seconds of rendered speech in hand
+retry_base = 1.0        # backoff seed for a failed stage
+retry_max = 30.0

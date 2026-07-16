@@ -1,0 +1,22 @@
+# Direct dependencies only, at the versions this was built and tested against.
+#
+# torch and transformers are deliberately absent: qwen-tts pins its own, and
+# letting it choose is why this needs a virtualenv rather than your system
+# python.
+#
+#     python3 -m venv .venv
+#     .venv/bin/pip install -r requirements.txt
+
+qwen-tts==0.1.1         # the voice: clones voice.wav (Base), invents new ones (VoiceDesign)
+soundfile==0.14.0       # read/write wavs
+sounddevice==0.5.5      # playback, in small blocks so Ctrl-C lands
+numpy==2.4.6            # pcm
+requests==2.34.2        # talks to llama-server
+python-dotenv==1.2.2    # reads .env
+
+pytest==9.1.1           # tests only
+
+# Not pip-installable, needed anyway:
+#   ffmpeg      (with rubberband) -- time-stretching, if you change [pacing].tempo
+#   pipewire    -- audio out
+#   llama.cpp   -- the writer; build it with scripts/build-llama.sh

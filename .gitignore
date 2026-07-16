@@ -1,0 +1,28 @@
+# NOTE: git has no trailing comments. Every comment here is its own line, or
+# the '#' becomes part of the pattern and the rule silently does nothing.
+
+# Machine-specific model paths. .env.example is committed in its place.
+.env
+
+# Scratch from ./design-voice. voice.wav is a standalone copy, so this is safe
+# to delete; it is NOT the voice itself.
+candidates/
+
+# voice.wav and voice.txt are her -- required at runtime, and not committed.
+# Generate your own with ./design-voice (see README).
+voice.wav
+voice.txt
+
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# llama-server output, written by ./yap
+yapper.log
+
+# editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
