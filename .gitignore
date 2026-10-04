@@ -18,6 +18,9 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
+# llama.cpp checkout + build (local dependency, not committed)
+llama.cpp/
+
 # llama-server output, written by ./yap
 yapper.log
 
