@@ -2,7 +2,7 @@
 
 ![yapper](assets/banner.png)
 
-![version](https://img.shields.io/badge/version-2.0.1-b07b8d.svg?style=flat-square&labelColor=374151) ![runs local](https://img.shields.io/badge/runs-100%25_local-2e1a47?style=flat-square) ![writer: llama.cpp](https://img.shields.io/badge/writer-llama.cpp-9e365c?style=flat-square) ![voice](https://img.shields.io/badge/voice-Qwen3--TTS-c1573f?style=flat-square) ![vram](https://img.shields.io/badge/VRAM-~16_GB-e88a4a?style=flat-square)
+![version](https://img.shields.io/badge/version-0.0.1-b07b8d.svg?style=flat-square&labelColor=374151) ![runs local](https://img.shields.io/badge/runs-100%25_local-2e1a47?style=flat-square) ![writer: llama.cpp](https://img.shields.io/badge/writer-llama.cpp-9e365c?style=flat-square) ![voice](https://img.shields.io/badge/voice-Qwen3--TTS-c1573f?style=flat-square) ![vram](https://img.shields.io/badge/VRAM-~16_GB-e88a4a?style=flat-square)
 
 She tells made-up stories forever: a man burping through a film, a kitten behind a coffee shop, bread that became a cat.
 
@@ -19,7 +19,7 @@ That's it. Ctrl-C when you've had enough.
 ---
 
 ## How she works
-
+v
 Two models, running at once on one GPU. One writes, one speaks.
 
 ```
